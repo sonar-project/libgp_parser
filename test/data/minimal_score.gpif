@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<GPIF>
+  <Score>
+    <Title>Test Song</Title>
+    <SubTitle>Subtitle</SubTitle>
+    <Artist>Test Artist</Artist>
+    <Album>Test Album</Album>
+    <Words>Lyrics by</Words>
+    <Music>Music by</Music>
+    <WordsAndMusic>Words And Music</WordsAndMusic>
+    <Copyright>(C) 2026</Copyright>
+    <Tabber>Tabber Name</Tabber>
+    <Instructions>Play loud</Instructions>
+    <Notices>Some notice</Notices>
+  </Score>
+  <MasterTrack>
+    <Automations>
+      <Automation>
+        <Type>Tempo</Type>
+        <Bar>0</Bar>
+        <Value>120 2</Value>
+        <Linear>false</Linear>
+        <Position>0</Position>
+        <Visible>true</Visible>
+      </Automation>
+    </Automations>
+  </MasterTrack>
+</GPIF>
