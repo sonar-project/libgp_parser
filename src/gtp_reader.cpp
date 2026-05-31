@@ -5,6 +5,7 @@
 #include "libgp_parser/version_constants.hpp"
 
 #include <cstring>
+#include <utility>
 
 namespace libgp_parser {
     namespace {
@@ -16,25 +17,26 @@ namespace libgp_parser {
 
         ParseResult<GtpVersion> detect_version(const std::string &version) {
             if (version == "FICHIER GUITAR PRO v3.00") {
-                return ParseResult<GtpVersion>::success({Version::Version3, 0});
+                return ParseResult<GtpVersion>::success({.format = Version::Version3, .code = 0});
             }
             if (version == "FICHIER GUITAR PRO v4.00") {
-                return ParseResult<GtpVersion>::success({Version::Version4, 0});
+                return ParseResult<GtpVersion>::success({.format = Version::Version4, .code = 0});
             }
             if (version == "FICHIER GUITAR PRO v4.06") {
-                return ParseResult<GtpVersion>::success({Version::Version4, 1});
+                return ParseResult<GtpVersion>::success({.format = Version::Version4, .code = 1});
             }
             if (version == "FICHIER GUITAR PRO L4.06") {
-                return ParseResult<GtpVersion>::success({Version::Version4, 2});
+                return ParseResult<GtpVersion>::success({.format = Version::Version4, .code = 2});
             }
             if (version == "FICHIER GUITAR PRO v5.00") {
-                return ParseResult<GtpVersion>::success({Version::Version5, 0});
+                return ParseResult<GtpVersion>::success({.format = Version::Version5, .code = 0});
             }
             if (version == "FICHIER GUITAR PRO v5.10") {
-                return ParseResult<GtpVersion>::success({Version::Version5, 1});
+                return ParseResult<GtpVersion>::success({.format = Version::Version5, .code = 1});
             }
             return ParseResult<GtpVersion>::failure(
-                {ParseErrorCode::Unsupported, "Unsupported GTP version: " + version});
+                {.code = ParseErrorCode::Unsupported,
+                 .message = "Unsupported GTP version: " + version});
         }
 
         ParseResult<Ok> read_info_comments(BinaryReader &inputStream, SongMetadata &metadata);
@@ -557,7 +559,7 @@ namespace libgp_parser {
         const int len = (data[0] <= Constants::ShiftByte30) ? static_cast<int>(data[0])
                                                             : Constants::ShiftByte30;
         constexpr std::string_view prefix("FICHIER GUITAR PRO");
-        if (len < static_cast<int>(prefix.size())) {
+        if (std::cmp_less(len, prefix.size())) {
             return false;
         }
         return std::memcmp(data.subspan(1).data(), prefix.data(), prefix.size()) == 0;

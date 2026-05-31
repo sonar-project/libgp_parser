@@ -1,6 +1,14 @@
 #pragma once
+#include <cstdint>
 
 namespace libgp_parser {
+
+    enum class NoteType : std::uint8_t { Half = 1, DottedHalf = 3, Double = 4, Triple = 5 };
+
+    struct TempoParams {
+        int bpm{0};
+        NoteType note_value;
+    };
 
     /// Converts GPX tempo using the note-value factor to BPM.
     /// @par TuxGuitar source
@@ -12,6 +20,6 @@ namespace libgp_parser {
     /// Same switch logic as in Java.
     /// @par Visibility
     /// public (library API).
-    [[nodiscard]] int apply_gpx_tempo_modifier(int bpm, int note_value) noexcept;
+    [[nodiscard]] int apply_gpx_tempo_modifier(const TempoParams &params) noexcept;
 
 } // namespace libgp_parser

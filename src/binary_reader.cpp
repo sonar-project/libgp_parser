@@ -8,7 +8,9 @@
 namespace libgp_parser {
     namespace {
 
-        ParseError io_error(std::string_view msg) { return {ParseErrorCode::Io, std::string(msg)}; }
+        ParseError io_error(std::string_view msg) {
+            return {.code = ParseErrorCode::Io, .message = std::string(msg)};
+        }
 
     } // namespace
 

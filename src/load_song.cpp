@@ -67,7 +67,8 @@ namespace libgp_parser {
 
         const auto &bytes = file.value();
         if (bytes.size() < 4) {
-            return ParseResult<Song>::failure({ParseErrorCode::Unsupported, "File too short"});
+            return ParseResult<Song>::failure(
+                {.code = ParseErrorCode::Unsupported, .message = "File too short"});
         }
 
         auto result = is_gtp_file(bytes) ? load_gtp_song(bytes) : load_gpx_song(bytes);

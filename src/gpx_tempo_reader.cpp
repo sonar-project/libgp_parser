@@ -27,7 +27,8 @@ namespace libgp_parser {
 
             const std::vector<int> parts = parse_int_list(value_text);
             if (parts.size() >= 2) {
-                return apply_gpx_tempo_modifier(parts[0], parts[1]);
+                return apply_gpx_tempo_modifier(
+                    {.bpm = parts[0], .note_value = static_cast<NoteType>(parts[1])});
             }
             if (parts.size() == 1) {
                 // GP6: <Value>120.000000</Value> (single BPM, no note-value modifier)

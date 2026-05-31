@@ -33,18 +33,18 @@ else()
 endif()
 
 add_library(libgp_parser STATIC
-    src/binary_reader.cpp 
-    src/gpx_archive.cpp
-    src/gpx_format.cpp
-    src/gpx_gp6_filesystem.cpp
-    src/gpx_score_bundle.cpp
-    src/gpx_score_reader.cpp
-    src/gpx_tempo_reader.cpp
-    src/gpx_track_reader.cpp
-    src/gtp_reader.cpp
-    src/load_song.cpp
-    src/tempo.cpp
-    src/tuning_pitches.cpp
+    src/binary_reader.cpp include/libgp_parser/binary_reader.hpp
+    src/gpx_archive.cpp include/libgp_parser/gpx_archive.hpp
+    src/gpx_format.cpp  include/libgp_parser/gpx_format.hpp
+    src/gpx_gp6_filesystem.cpp include/libgp_parser/gpx_gp6_filesystem.hpp
+    src/gpx_score_bundle.cpp include/libgp_parser/gpx_score_bundle.hpp
+    src/gpx_score_reader.cpp include/libgp_parser/gpx_score_reader.hpp
+    src/gpx_tempo_reader.cpp include/libgp_parser/gpx_tempo_reader.hpp
+    src/gpx_track_reader.cpp include/libgp_parser/gpx_track_reader.hpp
+    src/gtp_reader.cpp include/libgp_parser/gpx_track_reader.hpp
+    src/load_song.cpp include/libgp_parser/load_song.hpp
+    src/tempo.cpp include/libgp_parser/tempo.hpp
+    src/tuning_pitches.cpp include/libgp_parser/tuning_pitches.hpp
 )
 
 add_library(libgp_parser::libgp_parser ALIAS libgp_parser)
