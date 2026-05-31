@@ -1,5 +1,7 @@
 # libgp_parser
 
+[![Test libgp_parser](https://github.com/sonar-project/libgp_parser/actions/workflows/ci-tests.yaml/badge.svg)](https://github.com/sonar-project/libgp_parser/actions/workflows/ci-tests.yaml)
+
 A modern C++23 library for parsing Guitar Pro files. Incrementally ported from TuxGuitar, this project focuses on high robustness, strict type safety, and an idiomatic modern C++ API. Contributions and feedback are welcome!
 
 This implementation was developed as a clean-room port of the Guitar Pro file parsing logic. It utilizes C++23 features to provide a type-safe and robust API. The parser architecture was designed independently from legacy Java-based implementations to leverage modern C++ memory safety and performance patterns.
