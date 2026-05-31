@@ -5,21 +5,21 @@ on: [push, pull_request]
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-
+    container:
+      image: archlinux:latest
     steps:
+      - name: Update and Install dependencies
+        run: |
+          pacman -Syu --noconfirm
+          pacman -S --noconfirm base-devel cmake
+
       - name: Check out code
         uses: actions/checkout@v4
 
-      - name: Cache build
-        uses: actions/cache@v4
-        with:
-          path: build/
-          key: ${{ runner.os }}-build-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-build-
-
+      # Cache-Tipp: Da Arch so schnell ist, brauchst du oft keinen Cache für kleine Projekte.
+      # Wenn du ihn behalten willst, stelle sicher, dass der Pfad absolut ist.
       - name: Configuring CMake
-        run: cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
+        run: cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=23
 
       - name: Building Project
         run: cmake --build build --config Release
