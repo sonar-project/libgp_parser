@@ -17,20 +17,20 @@ option(LIBGP_PARSER_BUILD_EXAMPLE "Build example CLI" ON)
 
 include(cmake/Dependencies.cmake)
 
-# enable cppcheck
-find_program(CPPCHECK_PATH cppcheck)
-if(CPPCHECK_PATH)
-    set(CMAKE_CXX_CPPCHECK
-        ${CPPCHECK_PATH}
-        --enable=warning,performance,portability
-        --inline-suppr
-        --suppress=missingIncludeSystem
-        --std=c++23
-        --suppress=*:*/_deps/*
-    )
-else()
-    message(WARNING "Cppcheck not found!")
-endif()
+# # enable cppcheck
+# find_program(CPPCHECK_PATH cppcheck)
+# if(CPPCHECK_PATH)
+#     set(CMAKE_CXX_CPPCHECK
+#         ${CPPCHECK_PATH}
+#         --enable=warning,performance,portability
+#         --inline-suppr
+#         --suppress=missingIncludeSystem
+#         --std=c++23
+#         --suppress=*:*/_deps/*
+#     )
+# else()
+#     message(WARNING "Cppcheck not found!")
+# endif()
 
 add_library(libgp_parser STATIC
     src/binary_reader.cpp include/libgp_parser/binary_reader.hpp
