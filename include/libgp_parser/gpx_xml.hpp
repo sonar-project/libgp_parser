@@ -82,11 +82,12 @@ namespace libgp_parser::gpx_xml {
         return parse_int(text).value_or(0);
     }
 
-    [[nodiscard]] inline std::vector<int> parse_int_list(std::string_view text) {
+    [[nodiscard]] inline std::vector<int> parse_int_list(std::string_view text,
+                                                         std::string_view delimiters) {
         std::vector<int> values;
         std::size_t start = 0;
         while (start < text.size()) {
-            const std::size_t end = text.find_first_of(" \t\r\n", start);
+            const std::size_t end = text.find_first_of(delimiters, start);
             const std::size_t token_end = (end == std::string_view::npos) ? text.size() : end;
             if (token_end > start) {
                 const auto token = text.substr(start, token_end - start);
@@ -98,6 +99,39 @@ namespace libgp_parser::gpx_xml {
             start = end + 1;
         }
         return values;
+    }
+
+    [[nodiscard]] inline std::vector<int> parse_int_list(std::string_view text) {
+        return parse_int_list(text, " \t\r\n");
+    }
+
+    [[nodiscard]] inline std::vector<int> child_int_list(const pugi::xml_node &parent,
+                                                         std::string_view name,
+                                                         std::string_view delimiters = " \t\r\n") {
+        return parse_int_list(direct_child_text(parent, name), delimiters);
+    }
+
+    [[nodiscard]] inline bool child_bool(const pugi::xml_node &parent, std::string_view name) {
+        return direct_child_text(parent, name) == "true";
+    }
+
+    [[nodiscard]] inline bool attribute_bool(const pugi::xml_node &node, std::string_view name) {
+        for (pugi::xml_attribute attr : node.attributes()) {
+            if (std::string_view(attr.name()) == name) {
+                return std::string_view(attr.value()) == "true";
+            }
+        }
+        return false;
+    }
+
+    [[nodiscard]] inline std::string attribute_string(const pugi::xml_node &node,
+                                                      std::string_view name) {
+        for (pugi::xml_attribute attr : node.attributes()) {
+            if (std::string_view(attr.name()) == name) {
+                return attr.value();
+            }
+        }
+        return {};
     }
 
 } // namespace libgp_parser::gpx_xml

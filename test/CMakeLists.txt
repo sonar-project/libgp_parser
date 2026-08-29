@@ -15,7 +15,9 @@ add_executable(libgp_parser_tests
     test_gpx_score_reader.cpp
     test_gpx_track_reader.cpp
     test_gtp_reader.cpp
+    test_gpx_document.cpp
     test_load_song.cpp
+    test_domain_model.cpp
     test_song.cpp
     test_tempo.cpp
     test_track.cpp

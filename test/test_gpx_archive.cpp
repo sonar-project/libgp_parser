@@ -1,5 +1,6 @@
 #include <libgp_parser/byte_string.hpp>
 #include <libgp_parser/gpx_archive.hpp>
+#include <libgp_parser/gpx_score_bundle.hpp>
 
 #include "test_helpers.hpp"
 
@@ -8,6 +9,7 @@
 
 #include <cstring>
 #include <span>
+#include <string>
 #include <vector>
 
 using namespace libgp_parser;
@@ -16,7 +18,7 @@ namespace {
 
     constexpr int initial_zip_size = 1024;
 
-    std::vector<std::uint8_t> make_minimal_gpx_zip() {
+    std::vector<std::uint8_t> make_gpx_zip(const std::string &version) {
         const std::string score_xml = test::read_fixture("minimal_score.gpif");
 
         mz_zip_archive zip{};
@@ -27,7 +29,7 @@ namespace {
 
         mz_zip_writer_add_mem(&zip, "Content/score.gpif", score_xml.data(), score_xml.size(),
                               MZ_DEFAULT_COMPRESSION);
-        mz_zip_writer_add_mem(&zip, "VERSION", "7.0", 3, MZ_NO_COMPRESSION);
+        mz_zip_writer_add_mem(&zip, "VERSION", version.data(), version.size(), MZ_NO_COMPRESSION);
 
         void *heap = nullptr;
         size_t size = 0;
@@ -42,6 +44,8 @@ namespace {
         mz_free(heap);
         return out;
     }
+
+    std::vector<std::uint8_t> make_minimal_gpx_zip() { return make_gpx_zip("7.0"); }
 
 } // namespace
 
@@ -68,4 +72,17 @@ TEST_CASE("GpxZipArchive extract_score_gpif", "[gpx][zip]") {
     auto score = archive.value().extract_score_gpif();
     REQUIRE(score);
     REQUIRE(score.value().size() > 0);
+}
+
+TEST_CASE("extract_score_gpif accepts GP7 VERSION 7.0", "[gpx][gp7]") {
+    const std::vector<std::uint8_t> zip_bytes = make_gpx_zip("7.0");
+    auto score = extract_score_gpif(zip_bytes);
+    REQUIRE(score);
+}
+
+TEST_CASE("extract_score_gpif rejects unsupported GP ZIP VERSION", "[gpx][gp7]") {
+    const std::vector<std::uint8_t> zip_bytes = make_gpx_zip("8.0");
+    auto score = extract_score_gpif(zip_bytes);
+    REQUIRE_FALSE(score);
+    REQUIRE(score.error().code == ParseErrorCode::Unsupported);
 }

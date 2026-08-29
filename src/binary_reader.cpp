@@ -23,6 +23,14 @@ namespace libgp_parser {
         return ParseResult<std::uint8_t>::success(data_[pos_++]);
     }
 
+    ParseResult<std::int8_t> BinaryReader::read_i8() {
+        auto byte = read_u8();
+        if (!byte) {
+            return ParseResult<std::int8_t>::failure(byte.error());
+        }
+        return ParseResult<std::int8_t>::success(static_cast<std::int8_t>(byte.value()));
+    }
+
     ParseResult<std::int32_t> BinaryReader::read_i32() {
         if (pos_ + 4 > data_.size()) {
             return ParseResult<std::int32_t>::failure(io_error("Unexpected end of file"));

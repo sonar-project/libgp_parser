@@ -4,6 +4,8 @@
 #include "libgp_parser/gpx_format.hpp"
 #include "libgp_parser/gpx_gp6_filesystem.hpp"
 
+#include <string>
+
 namespace libgp_parser {
 
     ParseResult<std::vector<std::uint8_t>>
@@ -27,6 +29,20 @@ namespace libgp_parser {
             auto archive = GpxZipArchive::open(file_data);
             if (!archive) {
                 return ParseResult<std::vector<std::uint8_t>>::failure(archive.error());
+            }
+            if (archive.value().contains("VERSION")) {
+                auto version = archive.value().extract("VERSION");
+                if (version) {
+                    std::string text(version.value().begin(), version.value().end());
+                    if (text.size() >= 3) {
+                        text.resize(3);
+                    }
+                    if (text != "7.0") {
+                        return ParseResult<std::vector<std::uint8_t>>::failure(
+                            {.code = ParseErrorCode::Unsupported,
+                             .message = "Unsupported GP ZIP version: " + text});
+                    }
+                }
             }
             return archive.value().extract_score_gpif();
         }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "libgp_parser/channel.hpp"
+#include "libgp_parser/measure.hpp"
 #include "libgp_parser/track.hpp"
 
 #include <cstddef>
@@ -42,6 +44,8 @@ namespace libgp_parser {
     struct Song {
         SongMetadata metadata;
         std::vector<Track> tracks;
+        std::vector<MeasureHeader> measure_headers;
+        std::vector<Channel> channels;
 
         /// Initial tempo in BPM (quarter notes per minute). 0 if not read.
         int tempo_bpm{0};
@@ -59,7 +63,12 @@ namespace libgp_parser {
         [[nodiscard]] const std::string &comments() const noexcept { return metadata.notices; }
 
         [[nodiscard]] std::size_t track_count() const noexcept { return tracks.size(); }
+        [[nodiscard]] std::size_t measure_count() const noexcept { return measure_headers.size(); }
         [[nodiscard]] bool has_tempo() const noexcept { return tempo_bpm > 0; }
+
+        [[nodiscard]] const MeasureHeader &header_for(const Measure &measure) const {
+            return measure_headers.at(static_cast<std::size_t>(measure.header_index));
+        }
 
         [[nodiscard]] bool operator==(const Song &) const = default;
     };

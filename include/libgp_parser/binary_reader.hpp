@@ -37,6 +37,10 @@ namespace libgp_parser {
         /// @par TuxGuitar source readUnsignedByte().
         /// @par Visibility public.
         [[nodiscard]] ParseResult<std::uint8_t> read_u8();
+        /// Reads a signed byte (readByte).
+        /// @par TuxGuitar source readByte().
+        /// @par Visibility public.
+        [[nodiscard]] ParseResult<std::int8_t> read_i8();
         /// Reads a 32-bit signed int (readInt).
         /// @par TuxGuitar source readInt().
         /// @par Visibility public.

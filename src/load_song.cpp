@@ -3,9 +3,7 @@
 #include "libgp_parser/byte_string.hpp"
 #include "libgp_parser/gpx_format.hpp"
 #include "libgp_parser/gpx_score_bundle.hpp"
-#include "libgp_parser/gpx_score_reader.hpp"
-#include "libgp_parser/gpx_tempo_reader.hpp"
-#include "libgp_parser/gpx_track_reader.hpp"
+#include "libgp_parser/gpx_document.hpp"
 #include "libgp_parser/gtp_reader.hpp"
 #include "libgp_parser/tuning_pitches.hpp"
 
@@ -32,29 +30,13 @@ namespace libgp_parser {
             }
 
             const std::string xml = bytes_to_string(gpif.value());
-            const std::string_view xml_view{xml};
             const bool is_gp7 = is_zip_header(file_data);
 
-            auto metadata = parse_gpx_score_metadata(xml_view);
-            if (!metadata) {
-                return ParseResult<Song>::failure(metadata.error());
+            auto document = parse_gpx_document(xml, is_gp7);
+            if (!document) {
+                return ParseResult<Song>::failure(document.error());
             }
-
-            auto tracks = parse_gpx_tracks(xml_view, is_gp7);
-            if (!tracks) {
-                return ParseResult<Song>::failure(tracks.error());
-            }
-
-            auto tempo = parse_gpx_initial_tempo(xml_view);
-            if (!tempo) {
-                return ParseResult<Song>::failure(tempo.error());
-            }
-
-            Song song;
-            song.metadata = std::move(metadata.value());
-            song.tracks = std::move(tracks.value());
-            song.tempo_bpm = tempo.value();
-            return ParseResult<Song>::success(std::move(song));
+            return ParseResult<Song>::success(map_gpx_document(document.value()));
         }
 
     } // namespace

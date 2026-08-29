@@ -7,12 +7,12 @@
 
 namespace libgp_parser {
 
-    /// Loads a Guitar Pro file and builds a Song with metadata and tracks.
+    /// Loads a Guitar Pro file and builds a Song (TuxGuitar import mapping).
     /// @par TuxGuitar source
-    /// Same flow as GPXInputStream / GTPInputStream → GPXDocumentReader.read() or
-    /// readSong(), without a full TGSong (phase-1 fields only).
+    /// GPXInputStream / GTPInputStream → GPXDocumentReader + GPXDocumentParser
+    /// or GP3/4/5InputStream.readSong() plus GTPSongNormalizer.
     /// @par Brief
-    /// Detects GPX (ZIP/BCFS) or GTP and fills Song including tuning.
+    /// Detects GPX (ZIP/BCFS) or GTP and fills metadata, tracks, measures, and notes.
     /// @par Visibility
     /// public (library API).
     [[nodiscard]] ParseResult<Song> load_song(const std::filesystem::path &path);

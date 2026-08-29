@@ -41,7 +41,9 @@ add_library(libgp_parser STATIC
     src/gpx_score_reader.cpp include/libgp_parser/gpx_score_reader.hpp
     src/gpx_tempo_reader.cpp include/libgp_parser/gpx_tempo_reader.hpp
     src/gpx_track_reader.cpp include/libgp_parser/gpx_track_reader.hpp
-    src/gtp_reader.cpp include/libgp_parser/gpx_track_reader.hpp
+    src/gpx_document_reader.cpp include/libgp_parser/gpx_document.hpp
+    src/gpx_document_parser.cpp include/libgp_parser/gpx_document.hpp
+    src/gtp_reader.cpp include/libgp_parser/gtp_reader.hpp
     src/load_song.cpp include/libgp_parser/load_song.hpp
     src/tempo.cpp include/libgp_parser/tempo.hpp
     src/tuning_pitches.cpp include/libgp_parser/tuning_pitches.hpp
