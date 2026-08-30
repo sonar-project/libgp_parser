@@ -20,6 +20,7 @@ add_executable(libgp_parser_tests
     test_domain_model.cpp
     test_song.cpp
     test_tempo.cpp
+    test_timeline.cpp
     test_track.cpp
 )
 

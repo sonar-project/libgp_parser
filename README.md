@@ -6,11 +6,11 @@ A modern C++23 library for parsing Guitar Pro files. Incrementally ported from T
 
 This implementation was developed as a clean-room port of the Guitar Pro file parsing logic. It utilizes C++23 features to provide a type-safe and robust API. The parser architecture was designed independently from legacy Java-based implementations to leverage modern C++ memory safety and performance patterns.
 
-It is being incrementally ported from [TuxGuitar](https://github.com/helge17/tuxguitar)’s Java GPX module of TuxGuitar, with a clear focus on robustness, type safety, and modern C++ API design.
+It is being incrementally ported from [TuxGuitar](https://github.com/helge17/tuxguitar)’s Java GPX and GTP modules, with a clear focus on robustness, type safety, and modern C++ API design.
 
 ## Motivation
 
-This project arose from the need to process Guitar Pro metadata efficiently and modularly within
+This project arose from the need to process Guitar Pro files efficiently and modularly within
 custom C++ applications, without having to integrate the parser directly into the application code.
 
 Currently, it serves as the foundation for the redevelopment of sonarpractice, with a focus on
@@ -35,8 +35,8 @@ state-of-the-art standards (C++23), Test-Driven Development (TDD), and a clean a
 | ------ | --------- |
 | `include/libgp_parser/` | Public headers |
 | `src/` | Parser implementation |
-| `tests/` | Catch2 unit tests (TDD) |
-| `example/` | `gp_info` CLI — prints metadata and track count |
+| `test/` | Catch2 unit tests (TDD) |
+| `example/` | `gp_info` (metadata) and `gp_score` (measures, notes, effects) |
 
 ## Build & Integration
 
@@ -45,37 +45,48 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
 cmake --build build
 ctest --test-dir build --output-on-failure
 ./build/example/gp_info path/to/file.gpx
+./build/example/gp_score path/to/file.gp5
 ```
 
 Options: `-DLIBGP_PARSER_BUILD_TESTS=OFF`, `-DLIBGP_PARSER_BUILD_EXAMPLE=OFF`.
 
-## Domain model (phase 1)
-
-* `Song` / `SongMetadata` — mirrors `GPXScore` + track list (`GPXDocument`)
-* `Track` — mirrors `GPXTrack` (tuning, GM channels, capo, color)
+FetchContent consumers should use tag **v0.2.0** (or later). The CMake target is `libgp_parser::libgp_parser`.
 
 Dependencies (CMake FetchContent): **pugixml**, **miniz**, **Catch2** (tests only).
 
-* `parse_gpx_score_metadata()` — score.gpif XML (`GPXDocumentReader.readScore`)
-* `GpxZipArchive` — ZIP extraction for `.gpx` (GP7: `Content/score.gpif`)
-* `load_song(path)` — auto-detects format and fills metadata + track count where available
+## Domain model
+
+`load_song(path)` is the consumer entry point. It auto-detects GTP or GPX and fills a `Song` using TuxGuitar’s import mapping (not a lossless GP clone).
+
+* `Song` / `SongMetadata` — title, artist, album, tempo, measure headers, mixer channels, tracks
+* `Track` — name, tuning, GM program/channels, capo, lyrics (GTP), measures
+* `MeasureHeader` — time signature, tempo, repeats, marker, triplet feel
+* `Measure` / `Beat` / `Voice` — up to two voices, chords, strokes, beat text
+* `Note` / `NoteEffect` — fret, string, velocity, ties; bend, harmonic, grace, trill, tremolo, slides, etc.
+* `Channel`, `Lyric`, `Chord`, `Marker`
+
+Lower-level helpers (`parse_gpx_score_metadata`, `parse_gpx_tracks`, `parse_gpx_initial_tempo`) remain for tests; applications should call `load_song()`.
 
 | Extension | Format | Status |
 | ----------- | -------- | -------- |
-| `.gp` | GP7 (ZIP) | metadata |
-| `.gpx` | GP6 (BCFS/BCFZ) | metadata |
-| `.gp3`–`.gp5` | GTP binary | metadata + track count |
-| GP6 BCFZ custom container | | metadata |
+| `.gp` | GP7 (ZIP, `VERSION` 7.0) | full import |
+| `.gpx` | GP6 (BCFS/BCFZ) | full import |
+| `.gp3`–`.gp5` | GTP binary | full import |
+| GP6 BCFZ custom container | | full import |
+
+**Mapping limits** (same as TuxGuitar): mix-change applies **tempo only**; GPX lyrics are not imported; GTP keeps one lyric track; max two voices; slide is a boolean; no export; no GP1/GP2.
+
+Playback helpers in `timeline.hpp`: MIDI pitch, tick-to-milliseconds, and repeat expansion (`MidiRepeatController`).
 
 ## Current Status & Roadmap
 
-The current state of the library meets the requirements for my main project, **sonarpractice**. The primary focus lies on the efficient extraction of metadata and the structural parsing of Guitar Pro files.
+Import parity with TuxGuitar’s GP3–GP5 and GP6/GP7 readers is in place: metadata, tracks, measures, notes, effects, chords, GTP lyrics, and mixer channels.
 
-**Current Scope:** Metadata parsing and the basic track structure function reliably within my application environment.
+**Current Scope:** `load_song()` returns a complete `Song` graph suitable for cataloguing and in-app notation/playback.
 
-**Future Plans:** The full implementation of track and note parsing (GPX/GTP) is planned as a future extension.
-  
-**Call for Contributions:** As I am currently focusing primarily on the further development of the core   **sonarpractice** application, contributions to extend the parser logic—particularly regarding note and track data—are highly welcome. If you would like to contribute features, I would be delighted to receive a pull request!
+**Future Plans:** finer `preciseStart` timing if tuplets need it; export is out of scope.
+
+**Call for Contributions:** Bug reports against real Guitar Pro files and extra fixtures (repeats, mix-change, two voices) are especially welcome.
 
 ## Workflow
 
@@ -86,31 +97,38 @@ The current state of the library meets the requirements for my main project, **s
 
 ## Usage
 
-The library is designed to be simple and safe to use. You can find a minimal example for extracting song metadata in the `example/` folder.
-
-A brief overview of the API:
+The library is designed to be simple and safe to use. `example/main.cpp` (`gp_info`) prints metadata; `example/gp_score.cpp` dumps the score.
 
 ```cpp
 #include <libgp_parser/load_song.hpp>
 #include <iostream>
 
-int main() {    
-    // Automatically loads the file and detects the format (GP,GPX,GP3-GP5)
+int main() {
     const auto result = libgp_parser::load_song("path_to_guitarpro_file");
-    
+
     if (!result) {
         std::cerr << "Error: " << result.error().message << '\n';
         return 1;
     }
 
     const libgp_parser::Song &song = result.value();
-    
+
     std::cout << "Title:  " << song.name() << '\n';
     std::cout << "Artist: " << song.artist() << '\n';
     std::cout << "Album:  " << song.album() << '\n';
-    std::cout << "Author: " << song.author() << '\n';
+    std::cout << "Tempo:  " << song.tempo_bpm << '\n';
 
-    return 0;
+    for (const libgp_parser::Track &track : song.tracks) {
+        for (const libgp_parser::Measure &measure : track.measures) {
+            const libgp_parser::MeasureHeader &header = song.header_for(measure);
+            for (const libgp_parser::Beat &beat : measure.beats) {
+                for (const libgp_parser::Note &note : beat.voice(0).notes) {
+                    (void)header;
+                    (void)note;
+                }
+            }
+        }
+    }
 }
 ```
 

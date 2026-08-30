@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.20)
 
 project(
     libgp_parser
-    VERSION 0.1.0
+    VERSION 0.2.0
     DESCRIPTION "Guitar Pro file parser (GP,GPX/GP5) — standalone C++ library"
     LANGUAGES CXX
 )
@@ -13,7 +13,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL "Export compile commands" FORCE)
 
 option(LIBGP_PARSER_BUILD_TESTS "Build unit tests" ON)
-option(LIBGP_PARSER_BUILD_EXAMPLE "Build example CLI" ON)
+option(LIBGP_PARSER_BUILD_EXAMPLE "Build example CLI" OFF)
 
 include(cmake/Dependencies.cmake)
 
@@ -46,6 +46,7 @@ add_library(libgp_parser STATIC
     src/gtp_reader.cpp include/libgp_parser/gtp_reader.hpp
     src/load_song.cpp include/libgp_parser/load_song.hpp
     src/tempo.cpp include/libgp_parser/tempo.hpp
+    src/timeline.cpp include/libgp_parser/timeline.hpp
     src/tuning_pitches.cpp include/libgp_parser/tuning_pitches.hpp
 )
 

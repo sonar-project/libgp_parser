@@ -70,20 +70,10 @@ namespace libgp_parser {
         /// @par Visibility public.
         [[nodiscard]] ParseResult<std::string> read_string_integer();
 
-        /// Skips the lyrics block (readLyrics, GP4/GP5).
-        /// @par TuxGuitar source readLyrics().
-        /// @par Visibility public.
-        [[nodiscard]] ParseResult<Ok> skip_lyrics();
-
         /// Skips page setup (GP5).
         /// @par TuxGuitar source readPageSetup().
         /// @par Visibility public.
         [[nodiscard]] ParseResult<Ok> skip_page_setup(int version_code);
-
-        /// Skips 64 MIDI channels (readChannels).
-        /// @par TuxGuitar source readChannels().
-        /// @par Visibility public.
-        [[nodiscard]] ParseResult<Ok> skip_channels();
 
         /// Reads readStringByte(fixed size).
         /// @par TuxGuitar source readStringByte(size).

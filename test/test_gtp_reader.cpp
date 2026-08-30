@@ -71,6 +71,8 @@ void verify_song_data_GP5(const Song &song) {
     REQUIRE(song.name() == "Example File GP5");
     REQUIRE(song.artist() == "SonarPractice");
     verify_example_track(song, 3, {62, 57, 53, 48, 43, 38});
+    const Beat &beat = song.tracks.front().measures.front().beats.front();
+    REQUIRE(beat.voice(1).empty);
 }
 
 void verify_song_data_GPX(const Song &song) {
@@ -161,4 +163,20 @@ TEST_CASE("GTPSongNormalizer sets percussion bank for GM channel 9", "[gtp][norm
     REQUIRE(song.channels.front().bank == kDefaultPercussionBank);
     REQUIRE(find_parameter(song.channels.front(), kGmChannel1Key)->value == "9");
     REQUIRE(find_parameter(song.channels.front(), kGmChannel2Key)->value == "9");
+}
+
+TEST_CASE("GTP lyrics from and text attach to the lyric track", "[gtp][lyrics]") {
+    const auto file_data = load_test_file("lyrics_score.gp4");
+    REQUIRE_FALSE(file_data.empty());
+
+    auto result = load_gtp_song(file_data);
+    INFO(result.error().message);
+    REQUIRE(result);
+
+    const Song &song = result.value();
+    REQUIRE(song.track_count() == 1);
+    REQUIRE(song.tracks.front().lyrics.from == 3);
+    REQUIRE(song.tracks.front().lyrics.text == "Chorus");
+    REQUIRE(song.name() == "Example File GP4");
+    REQUIRE(first_note(song).value == 1);
 }

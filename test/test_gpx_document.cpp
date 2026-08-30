@@ -77,3 +77,50 @@ TEST_CASE("GPX mapper maps bend, slide, hammer, chord, and marker", "[gpx][parse
     REQUIRE(note.effect.bend->points.back().position == EffectBend::MaxPositionLength);
     REQUIRE(note.effect.bend->points.back().value == 4);
 }
+
+TEST_CASE("GPX mapper applies mid-song tempo automations to later headers", "[gpx][parser][tempo]") {
+    const std::string xml = test::read_fixture("tempo_change_score.gpif");
+    auto document = parse_gpx_document(xml, false);
+    REQUIRE(document);
+
+    const Song song = map_gpx_document(document.value());
+    REQUIRE(song.measure_count() == 2);
+    REQUIRE(song.measure_headers[0].tempo.quarter_bpm == 120);
+    REQUIRE(song.measure_headers[1].tempo.quarter_bpm == 90);
+    REQUIRE(song.tempo_bpm == 120);
+}
+
+TEST_CASE("GPX mapper keeps two voices on the same beat", "[gpx][parser][voices]") {
+    const std::string xml = test::read_fixture("two_voices_score.gpif");
+    auto document = parse_gpx_document(xml, false);
+    REQUIRE(document);
+
+    const Song song = map_gpx_document(document.value());
+    REQUIRE(song.tracks.front().measures.size() == 1);
+    const Beat &beat = song.tracks.front().measures.front().beats.front();
+    REQUIRE_FALSE(beat.voice(0).empty);
+    REQUIRE_FALSE(beat.voice(1).empty);
+    REQUIRE(beat.voice(0).notes.front().string == 6);
+    REQUIRE(beat.voice(0).notes.front().value == 3);
+    REQUIRE(beat.voice(0).duration.value == DurationValue::Quarter);
+    REQUIRE(beat.voice(1).notes.front().string == 5);
+    REQUIRE(beat.voice(1).notes.front().value == 5);
+    REQUIRE(beat.voice(1).duration.value == DurationValue::Eighth);
+}
+
+TEST_CASE("GPX mapper copies notes from a Simple simile mark", "[gpx][parser][simile]") {
+    const std::string xml = test::read_fixture("simile_score.gpif");
+    auto document = parse_gpx_document(xml, false);
+    REQUIRE(document);
+    REQUIRE(document.value().bars.size() == 2);
+    REQUIRE(document.value().bars[1].simile_mark == "Simple");
+
+    const Song song = map_gpx_document(document.value());
+    REQUIRE(song.measure_count() == 2);
+    REQUIRE(song.tracks.front().measures.size() == 2);
+    const Note &first = song.tracks.front().measures[0].beats.front().voice(0).notes.front();
+    const Note &copied = song.tracks.front().measures[1].beats.front().voice(0).notes.front();
+    REQUIRE(first.value == 7);
+    REQUIRE(copied.value == 7);
+    REQUIRE(copied.string == first.string);
+}

@@ -122,26 +122,6 @@ namespace libgp_parser {
         return ParseResult<std::string>::success(std::move(payload));
     }
 
-    ParseResult<Ok> BinaryReader::skip_lyrics() {
-        if (auto from = read_i32(); !from.has_value()) {
-            return ParseResult<Ok>::failure(from.error());
-        }
-        auto lyrics = read_string_integer();
-        if (!lyrics.has_value()) {
-            return ParseResult<Ok>::failure(lyrics.error());
-        }
-        for (int i = 0; i < 4; ++i) {
-            if (auto marker = read_i32(); !marker.has_value()) {
-                return ParseResult<Ok>::failure(marker.error());
-            }
-            auto chunk = read_string_integer();
-            if (!chunk.has_value()) {
-                return ParseResult<Ok>::failure(chunk.error());
-            }
-        }
-        return ParseResult<Ok>::success(Ok{});
-    }
-
     ParseResult<Ok> BinaryReader::skip_string_byte(const int size) {
         auto len_byte = read_u8();
         if (!len_byte.has_value()) {
@@ -162,18 +142,6 @@ namespace libgp_parser {
                 return result;
             }
             if (auto result = skip_string_byte(0); !result.has_value()) {
-                return result;
-            }
-        }
-        return ParseResult<Ok>::success(Ok{});
-    }
-
-    ParseResult<Ok> BinaryReader::skip_channels() {
-        for (int i = 0; i < Constants::ShiftByte64; ++i) {
-            if (auto result = skip(4 + Constants::ShiftByte6); !result.has_value()) {
-                return result;
-            }
-            if (auto result = skip(2); !result.has_value()) {
                 return result;
             }
         }

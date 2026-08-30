@@ -7,7 +7,7 @@ If you would like to help improve the project or extend the parser logic, please
 ## How can I help?
 
 * Report a bug: If you encounter any bugs or if parsing a file fails, please open an issue.
-* Adding Features: Since the current focus is on metadata and basic structures, enhancements to note and track data (GPX/GTP) are particularly welcome.
+* Adding Features: Import parity with TuxGuitar is in place. Extra real-file fixtures, timeline/playback helpers, and robustness fixes are particularly welcome.
 * Documentation: Improvements to the API documentation or examples are always welcome.
 
 ## Development Workflow
@@ -15,9 +15,11 @@ If you would like to help improve the project or extend the parser logic, please
 This project utilizes a Test-Driven Development (TDD) approach. Please adhere to the following workflow:
 
 1. Analysis: Understand the reference implementation (TuxGuitar/Java) or the affected format.
-2. Test: Create a new unit test in the `tests/` directory using Catch2 that covers the desired behavior or the error case.
+2. Test: Create a new unit test in the `test/` directory using Catch2 that covers the desired behavior or the error case.
 3. Implementation: Write the minimal C++23 code necessary to pass the test.
 4. Refactoring: Optimizing the code using modern C++ features to achieve improved performance and security (preferring references over pointers).
+
+The public entry point for applications is `load_song()`. Prefer asserting on the mapped `Song` over the older `parse_gpx_*` helpers.
 
 ## Code Quality & Standards
 
@@ -29,7 +31,7 @@ To ensure the consistency and security of the project, we use automated analysis
 ## Pull Request Process
 
 1. Fork the repository.
-2. Create a branch for your change (git checkout -b feature/new-feature).
+2. Create a branch for the change (git checkout -b feature/new-feature).
 3. Implement your changes and ensure that all tests (including your new tests) pass successfully (ctest --test-dir build).
 4. Submit a pull request. Please briefly describe which problem was solved or which functionality was added.
 
