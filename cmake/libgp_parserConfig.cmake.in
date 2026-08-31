@@ -1,0 +1,8 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+find_dependency(pugixml CONFIG)
+
+include("${CMAKE_CURRENT_LIST_DIR}/libgp_parserTargets.cmake")
+
+check_required_components(libgp_parser)
