@@ -1,0 +1,98 @@
+name: Ubuntu DEB
+
+on:
+  push:
+    tags:
+      - v*
+  workflow_dispatch:
+
+jobs:
+  deb:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        release: ["25.10", "26.04"]
+    container:
+      image: ubuntu:${{ matrix.release }}
+
+    steps:
+      - name: Install git and ca-certificates
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get update -qq
+          apt-get install -y -qq git ca-certificates
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set version from tag
+        if: startsWith(github.ref, 'refs/tags/')
+        run: bash scripts/ci/set_version.sh "${GITHUB_REF_NAME}"
+
+      - name: Install build dependencies
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get update -qq
+          apt-get install -y -qq \
+            build-essential \
+            cmake \
+            ninja-build \
+            pkg-config \
+            libpugixml-dev \
+            dpkg-dev \
+            file
+
+      - name: Configure
+        run: |
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=/usr \
+            -DBUILD_SHARED_LIBS=ON \
+            -DLIBGP_PARSER_BUILD_TESTS=OFF \
+            -DLIBGP_PARSER_BUILD_EXAMPLE=OFF
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Package
+        run: |
+          cd build
+          cpack -G DEB
+          suffix="ubuntu$(echo '${{ matrix.release }}' | tr -d '.')"
+          mkdir -p ../dist
+          for deb in *.deb; do
+            base="${deb%.deb}"
+            mv "$deb" "../dist/${base}_${suffix}.deb"
+          done
+          ls -la ../dist
+
+      - name: Smoke-install packages
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get install -y ./dist/*.deb
+          # OUTPUT_NAME is gp_parser → libgp_parser.so*
+          lib="$(find /usr/lib -name 'libgp_parser.so*' | head -n1)"
+          cmake_cfg="$(find /usr -path '*/cmake/libgp_parser/libgp_parserConfig.cmake' | head -n1)"
+          test -n "${lib}"
+          test -n "${cmake_cfg}"
+          echo "Installed library: ${lib}"
+          echo "Installed CMake config: ${cmake_cfg}"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: libgp-parser-ubuntu${{ matrix.release }}
+          path: dist/*.deb
+          if-no-files-found: error
+
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.deb
+          prerelease: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

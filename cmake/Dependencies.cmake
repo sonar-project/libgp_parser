@@ -1,13 +1,13 @@
 include(FetchContent)
 
-set(LIBGP_PARSER_SYSTEM_DEPS TRUE)
+set(LIBGP_PARSER_SYSTEM_PUGIXML FALSE)
 
-# --- pugixml ---
+# --- pugixml (PUBLIC — exposed via include/libgp_parser/gpx_xml.hpp) ---
 find_package(pugixml CONFIG QUIET)
 if(pugixml_FOUND)
+    set(LIBGP_PARSER_SYSTEM_PUGIXML TRUE)
     message(STATUS "Using system pugixml")
 else()
-    set(LIBGP_PARSER_SYSTEM_DEPS FALSE)
     message(STATUS "pugixml not found — FetchContent v1.16")
     FetchContent_Declare(
         pugixml
@@ -19,7 +19,7 @@ else()
     FetchContent_MakeAvailable(pugixml)
 endif()
 
-# --- miniz (ZIP for GPX/GP7 containers) ---
+# --- miniz (PRIVATE — ZIP for GPX/GP7; not packaged on Ubuntu, link statically) ---
 find_package(miniz CONFIG QUIET)
 if(miniz_FOUND)
     message(STATUS "Using system miniz")
@@ -27,8 +27,10 @@ if(miniz_FOUND)
         add_library(miniz ALIAS miniz::miniz)
     endif()
 else()
-    set(LIBGP_PARSER_SYSTEM_DEPS FALSE)
-    message(STATUS "miniz not found — FetchContent 3.1.2")
+    message(STATUS "miniz not found — FetchContent 3.1.2 (static, PIC)")
+    # Keep caller's BUILD_SHARED_LIBS (e.g. ON for packaging) for libgp_parser itself.
+    set(_libgp_parser_saved_build_shared "${BUILD_SHARED_LIBS}")
+    set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
     FetchContent_Declare(
         miniz
         GIT_REPOSITORY https://github.com/richgel999/miniz.git
@@ -38,6 +40,11 @@ else()
     set(BUILD_TESTS OFF CACHE BOOL "" FORCE)
     set(INSTALL_PROJECT OFF CACHE BOOL "" FORCE)
     FetchContent_MakeAvailable(miniz)
+    if(DEFINED _libgp_parser_saved_build_shared)
+        set(BUILD_SHARED_LIBS "${_libgp_parser_saved_build_shared}" CACHE BOOL "" FORCE)
+    else()
+        unset(BUILD_SHARED_LIBS CACHE)
+    endif()
 endif()
 
 if(TARGET miniz::miniz)
@@ -46,4 +53,9 @@ elseif(TARGET miniz)
     set(LIBGP_PARSER_MINIZ_TARGET miniz)
 else()
     message(FATAL_ERROR "miniz target not found after dependency resolution")
+endif()
+
+# Static FetchContent miniz must be PIC when linked into a shared libgp_parser.
+if(TARGET miniz AND NOT miniz_FOUND)
+    set_target_properties(miniz PROPERTIES POSITION_INDEPENDENT_CODE ON)
 endif()
