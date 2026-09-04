@@ -22,6 +22,7 @@ include(cmake/Dependencies.cmake)
 add_library(libgp_parser
     src/binary_reader.cpp include/libgp_parser/binary_reader.hpp
     src/gpx_archive.cpp include/libgp_parser/gpx_archive.hpp
+    src/gpx_edit_lock.cpp include/libgp_parser/gpx_edit_lock.hpp
     src/gpx_format.cpp  include/libgp_parser/gpx_format.hpp
     src/gpx_gp6_filesystem.cpp include/libgp_parser/gpx_gp6_filesystem.hpp
     src/gpx_score_bundle.cpp include/libgp_parser/gpx_score_bundle.hpp
@@ -58,6 +59,7 @@ target_link_libraries(libgp_parser
         pugixml::pugixml
     PRIVATE
         ${LIBGP_PARSER_MINIZ_TARGET}
+        OpenSSL::Crypto
 )
 
 if(LIBGP_PARSER_BUILD_TESTS)
@@ -142,6 +144,6 @@ if(LIBGP_PARSER_ENABLE_INSTALL)
     set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
     set(CPACK_DEBIAN_RUNTIME_PACKAGE_NAME "libgp-parser0")
     set(CPACK_DEBIAN_DEVELOPMENT_PACKAGE_NAME "libgp-parser-dev")
-    set(CPACK_DEBIAN_DEVELOPMENT_PACKAGE_DEPENDS "libgp-parser0 (= ${PROJECT_VERSION}), libpugixml-dev")
+    set(CPACK_DEBIAN_DEVELOPMENT_PACKAGE_DEPENDS "libgp-parser0 (= ${PROJECT_VERSION}), libpugixml-dev, libssl-dev")
     include(CPack)
 endif()

@@ -33,6 +33,7 @@ target_link_libraries(libgp_parser_tests
     PRIVATE
         libgp_parser
         miniz
+        OpenSSL::Crypto
         Catch2::Catch2WithMain
 )
 

@@ -52,7 +52,7 @@ Options: `-DLIBGP_PARSER_BUILD_TESTS=OFF`, `-DLIBGP_PARSER_BUILD_EXAMPLE=OFF`.
 
 FetchContent consumers should use tag **v0.2.0** (or later). The CMake target is `libgp_parser::libgp_parser`.
 
-Dependencies (CMake FetchContent): **pugixml**, **miniz**, **Catch2** (tests only).
+Dependencies (CMake FetchContent): **pugixml**, **miniz**, **OpenSSL** (`libcrypto`, edit-locked `.gp`), **Catch2** (tests only).
 
 ## Domain model
 
@@ -69,7 +69,7 @@ Lower-level helpers (`parse_gpx_score_metadata`, `parse_gpx_tracks`, `parse_gpx_
 
 | Extension | Format | Status |
 | ----------- | -------- | -------- |
-| `.gp` | GP7 (ZIP, `VERSION` 7.0) | full import |
+| `.gp` | GP7/GP8 (ZIP, `VERSION` 7.x/8.x; edit-locked `score.gpif` decrypted) | full import |
 | `.gpx` | GP6 (BCFS/BCFZ) | full import |
 | `.gp3`–`.gp5` | GTP binary | full import |
 | GP6 BCFZ custom container | | full import |

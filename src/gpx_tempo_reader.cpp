@@ -51,11 +51,11 @@ namespace libgp_parser {
     ParseResult<int> parse_gpx_initial_tempo(const std::string_view xml) {
         pugi::xml_document doc;
         const pugi::xml_parse_result parsed =
-            doc.load_buffer(xml.data(), xml.size(), pugi::parse_default, pugi::encoding_utf8);
+            doc.load_buffer(xml.data(), xml.size(), pugi::parse_default, pugi::encoding_auto);
         if (!parsed) {
             return ParseResult<int>::failure(
                 {.code = ParseErrorCode::Xml,
-                 .message = std::string("XML parse error: ") + parsed.description()});
+                 .message = gpx_xml::format_xml_parse_error(parsed, xml)});
         }
 
         const pugi::xml_node master = find_master_track(doc);

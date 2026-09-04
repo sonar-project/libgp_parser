@@ -471,11 +471,11 @@ namespace libgp_parser {
     ParseResult<GpxDocument> parse_gpx_document(const std::string_view xml, const bool is_gp7) {
         pugi::xml_document xml_doc;
         const pugi::xml_parse_result parsed =
-            xml_doc.load_buffer(xml.data(), xml.size(), pugi::parse_default, pugi::encoding_utf8);
+            xml_doc.load_buffer(xml.data(), xml.size(), pugi::parse_default, pugi::encoding_auto);
         if (!parsed) {
             return ParseResult<GpxDocument>::failure(
                 {.code = ParseErrorCode::Xml,
-                 .message = std::string("XML parse error: ") + parsed.description()});
+                 .message = gpx_xml::format_xml_parse_error(parsed, xml)});
         }
 
         GpxDocument document;

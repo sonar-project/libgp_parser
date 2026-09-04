@@ -37,11 +37,11 @@ namespace libgp_parser {
     ParseResult<SongMetadata> parse_gpx_score_metadata(const std::string_view xml) {
         pugi::xml_document doc;
         const pugi::xml_parse_result parsed =
-            doc.load_buffer(xml.data(), xml.size(), pugi::parse_default, pugi::encoding_utf8);
+            doc.load_buffer(xml.data(), xml.size(), pugi::parse_default, pugi::encoding_auto);
         if (!parsed) {
             return ParseResult<SongMetadata>::failure(
                 {.code = ParseErrorCode::Xml,
-                 .message = std::string("XML parse error: ") + parsed.description()});
+                 .message = gpx_xml::format_xml_parse_error(parsed, xml)});
         }
 
         const pugi::xml_node score = find_score_node(doc);

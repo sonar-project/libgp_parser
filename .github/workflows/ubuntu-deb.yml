@@ -42,6 +42,7 @@ jobs:
             ninja-build \
             pkg-config \
             libpugixml-dev \
+            libssl-dev \
             dpkg-dev \
             file
 

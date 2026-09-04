@@ -7,7 +7,7 @@ Status: import parity with TuxGuitar’s GPX/GTP **read** path (`https://github.
 | TuxGuitar module | Java classes (excerpt) | C++ equivalent | Status |
 |------------------|------------------------|----------------|--------|
 | GPX container v6 | `GPXFileSystem` (v6) | `GpxGp6FileSystem`, `gpx_format` | **done** (BCFS/BCFZ, score.gpif) |
-| GPX container v7 | `GPXFileSystem` (v7) | `GpxZipArchive`, `extract_score_gpif` | **done** (ZIP, `Content/score.gpif`, VERSION `7.0`) |
+| GPX container v7 | `GPXFileSystem` (v7) | `GpxZipArchive`, `extract_score_gpif`, `decrypt_edit_locked_gpif` | **done** (ZIP, `Content/score.gpif`, VERSION `7.x`/`8.x`, edit-lock) |
 | GPX XML reading | `GPXDocumentReader` | `parse_gpx_document`, `gpx_xml` | **done** (score, tracks, master bars, bars, voices, beats, notes, rhythms, chords, automations) |
 | GPX → song | `GPXDocumentParser` | `map_gpx_document` | **done** (timing, notes, effects, chords, strokes, simile) |
 | GPX intermediate model | `GPXScore`, `GPXTrack`, `GPX*` | `GpxDocument`, `Song`, `Track` | **done** |
@@ -23,7 +23,7 @@ Estimate **relative to the GPX/GTP read path** in TuxGuitar (not the whole appli
 
 | Area | Share | Notes |
 |------|-------|--------|
-| File containers (.gp / .gpx / .gp3–.gp5 detect & open) | **~95%** | ZIP VERSION 7.0, BCFS, BCFZ, GTP magic |
+| File containers (.gp / .gpx / .gp3–.gp5 detect & open) | **~98%** | ZIP VERSION 7.x/8.x, edit-locked AES+zlib, BCFS, BCFZ, GTP magic |
 | Score metadata (title, artist, …) | **~95%** | GPX `readScore` + GTP `readInfo` |
 | Track headers (name, tuning, MIDI, color, capo) | **~95%** | GPX `readTracks` + GTP `readTrack` + mixer |
 | Tempo | **~90%** | GPX automations; GTP global tempo + mix-change tempo |

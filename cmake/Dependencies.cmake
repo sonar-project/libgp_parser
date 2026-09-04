@@ -2,6 +2,9 @@ include(FetchContent)
 
 set(LIBGP_PARSER_SYSTEM_PUGIXML FALSE)
 
+# --- OpenSSL (PRIVATE — GP7/GP8 edit-locked score.gpif decryption) ---
+find_package(OpenSSL REQUIRED)
+
 # --- pugixml (PUBLIC — exposed via include/libgp_parser/gpx_xml.hpp) ---
 find_package(pugixml CONFIG QUIET)
 if(pugixml_FOUND)

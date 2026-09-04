@@ -2,6 +2,7 @@
 
 #include <pugixml.hpp>
 
+#include <algorithm>
 #include <charconv>
 #include <optional>
 #include <string>
@@ -11,6 +12,36 @@
 
 /// XML helpers for score.gpif (equivalent to GPXDocumentReader getChildNode*).
 namespace libgp_parser::gpx_xml {
+
+    /// Builds an XML error message with pugixml offset and a short snippet.
+    [[nodiscard]] inline std::string format_xml_parse_error(const pugi::xml_parse_result &parsed,
+                                                            std::string_view xml) {
+        std::string message = std::string("XML parse error: ") + parsed.description();
+        message += " at offset ";
+        message += std::to_string(parsed.offset);
+        if (!xml.empty() && parsed.offset >= 0) {
+            const auto offset = static_cast<std::size_t>(parsed.offset);
+            if (offset < xml.size()) {
+                constexpr std::size_t kRadius = 24;
+                const std::size_t begin = offset > kRadius ? offset - kRadius : 0;
+                const std::size_t end = std::min(xml.size(), offset + kRadius);
+                message += " near \"";
+                for (std::size_t i = begin; i < end; ++i) {
+                    const char ch = xml[i];
+                    if (ch == '\n' || ch == '\r' || ch == '\t') {
+                        message.push_back(' ');
+                    } else if (static_cast<unsigned char>(ch) < 0x20 ||
+                               static_cast<unsigned char>(ch) == 0x7f) {
+                        message.push_back('.');
+                    } else {
+                        message.push_back(ch);
+                    }
+                }
+                message += "\"";
+            }
+        }
+        return message;
+    }
 
     /// Parses an integer from a bounded string view (no null terminator required).
     [[nodiscard]] inline std::optional<int> parse_int(std::string_view text) noexcept {

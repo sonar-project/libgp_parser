@@ -11,7 +11,7 @@ jobs:
       - name: Update and Install dependencies
         run: |
           pacman -Syu --noconfirm
-          pacman -S --noconfirm base-devel cmake git
+          pacman -S --noconfirm base-devel cmake git openssl
 
       - name: Check out code
         uses: actions/checkout@v4

@@ -150,11 +150,11 @@ namespace libgp_parser {
                                                      const bool is_gp7) {
         pugi::xml_document doc;
         const pugi::xml_parse_result parsed =
-            doc.load_buffer(xml.data(), xml.size(), pugi::parse_default, pugi::encoding_utf8);
+            doc.load_buffer(xml.data(), xml.size(), pugi::parse_default, pugi::encoding_auto);
         if (!parsed) {
             return ParseResult<std::vector<Track>>::failure(
                 {.code = ParseErrorCode::Xml,
-                 .message = std::string("XML parse error: ") + parsed.description()});
+                 .message = gpx_xml::format_xml_parse_error(parsed, xml)});
         }
 
         const pugi::xml_node tracks_node = find_tracks_container(doc);
