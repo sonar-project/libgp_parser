@@ -49,6 +49,15 @@ namespace libgp_parser {
             return (flags & mask) != 0;
         }
 
+        [[nodiscard]] bool is_unexpected_eof(const ParseError &error) noexcept {
+            return error.code == ParseErrorCode::Io && error.message == "Unexpected end of file";
+        }
+
+        constexpr int kMaxMeasures{10000};
+        constexpr int kMaxBeatsPerVoice{1024};
+        constexpr int kMaxComments{1000};
+        constexpr int kMaxBendPoints{1000};
+
         ParseResult<GtpVersion> detect_version(const std::string &version) {
             if (version == "FICHIER GUITAR PRO v3.00") {
                 return ParseResult<GtpVersion>::success({.format = Version::Version3, .code = 0});
@@ -94,6 +103,11 @@ namespace libgp_parser {
             auto count = stream.read_i32();
             if (!count) {
                 return ParseResult<Ok>::failure(count.error());
+            }
+            if (count.value() < 0 || count.value() > kMaxComments) {
+                return ParseResult<Ok>::failure(
+                    {.code = ParseErrorCode::Unsupported,
+                     .message = "Invalid comment count in GTP file"});
             }
             metadata.notices.clear();
             for (int i = 0; i < count.value(); ++i) {
@@ -379,6 +393,11 @@ namespace libgp_parser {
             if (!points) {
                 return fail_from<Ok>(points);
             }
+            if (points.value() < 0 || points.value() > kMaxBendPoints) {
+                return ParseResult<Ok>::failure(
+                    {.code = ParseErrorCode::Unsupported,
+                     .message = "Invalid bend point count in GTP file"});
+            }
             for (int i = 0; i < points.value(); ++i) {
                 auto position = stream.read_i32();
                 auto value = stream.read_i32();
@@ -410,6 +429,11 @@ namespace libgp_parser {
             auto points = stream.read_i32();
             if (!points) {
                 return fail_from<Ok>(points);
+            }
+            if (points.value() < 0 || points.value() > kMaxBendPoints) {
+                return ParseResult<Ok>::failure(
+                    {.code = ParseErrorCode::Unsupported,
+                     .message = "Invalid tremolo-bar point count in GTP file"});
             }
             for (int i = 0; i < points.value(); ++i) {
                 auto position = stream.read_i32();
@@ -1573,6 +1597,11 @@ namespace libgp_parser {
                 if (!beats) {
                     return fail_from<Ok>(beats);
                 }
+                if (beats.value() < 0 || beats.value() > kMaxBeatsPerVoice) {
+                    return ParseResult<Ok>::failure(
+                        {.code = ParseErrorCode::Unsupported,
+                         .message = "Invalid beat count in GTP measure"});
+                }
                 for (int i = 0; i < beats.value(); ++i) {
                     auto advance = read_beat(stream, measure, track, ctx, start, voice);
                     if (!advance) {
@@ -1726,6 +1755,11 @@ namespace libgp_parser {
                 {.code = ParseErrorCode::Io, .message = "Unexpected end of file"});
         }
         constexpr int kMaxTracks{1000};
+        if (measures.value() < 0 || measures.value() > kMaxMeasures) {
+            return ParseResult<Song>::failure(
+                {.code = ParseErrorCode::Unsupported,
+                 .message = "Invalid measure count in GTP file"});
+        }
         if (tracks.value() < 0 || tracks.value() > kMaxTracks) {
             return ParseResult<Song>::failure(
                 {.code = ParseErrorCode::Unsupported, .message = "Invalid track count in GTP file"});
@@ -1776,6 +1810,7 @@ namespace libgp_parser {
         for (int m = 0; m < measures.value(); ++m) {
             MeasureHeader &header = song.measure_headers[static_cast<std::size_t>(m)];
             header.start = start;
+            bool truncated = false;
             for (int t = 0; t < tracks.value(); ++t) {
                 Track &track = song.tracks[static_cast<std::size_t>(t)];
                 Measure measure;
@@ -1784,6 +1819,16 @@ namespace libgp_parser {
                     measure.clef = clef_from_tuning(song, track);
                 }
                 if (auto step = read_measure(stream, measure, track, ctx, header); !step) {
+                    // Truncated GP3/GP4 archives often cut mid-song; TuxGuitar's InputStream
+                    // reads return short/zero data instead of failing. Keep completed measures.
+                    if (ctx.format != Version::Version5 && is_unexpected_eof(step.error())) {
+                        for (int rollback = 0; rollback < t; ++rollback) {
+                            song.tracks[static_cast<std::size_t>(rollback)].measures.pop_back();
+                        }
+                        song.measure_headers.resize(static_cast<std::size_t>(m));
+                        truncated = true;
+                        break;
+                    }
                     return fail_from<Song>(step);
                 }
                 track.measures.push_back(std::move(measure));
@@ -1794,6 +1839,9 @@ namespace libgp_parser {
                         return fail_from<Song>(step);
                     }
                 }
+            }
+            if (truncated) {
+                break;
             }
             header.tempo = ctx.tempo;
             start += header.length();
