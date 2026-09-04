@@ -53,7 +53,19 @@ namespace libgp_parser {
                 {.code = ParseErrorCode::Unsupported, .message = "File too short"});
         }
 
-        auto result = is_gtp_file(bytes) ? load_gtp_song(bytes) : load_gpx_song(bytes);
+        // Misnamed downloads (HTML error pages, etc.) are neither GTP nor GPX; fail clearly
+        // instead of falling through to "Unknown GPX container".
+        ParseResult<Song> result;
+        if (is_gtp_file(bytes)) {
+            result = load_gtp_song(bytes);
+        } else if (is_zip_header(bytes) || is_gpx_gp6_header(read_le_u32(bytes))) {
+            result = load_gpx_song(bytes);
+        } else {
+            return ParseResult<Song>::failure(
+                {.code = ParseErrorCode::Unsupported,
+                 .message =
+                     "Unrecognized Guitar Pro file (expected GTP .gp3–.gp5, GPX BCFS/BCFZ, or GP ZIP)"});
+        }
         if (!result.has_value()) {
             return result;
         }
