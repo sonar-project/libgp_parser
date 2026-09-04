@@ -120,6 +120,18 @@ TEST_CASE("Integration Test: Real GP5 file parsing", "[gtp][integration]") {
     verify_song_data_GP5(song);
 }
 
+TEST_CASE("GP5 loads when final measure padding byte is omitted", "[gtp][integration]") {
+    auto file_data = load_test_file("testfile.gp5");
+    REQUIRE(file_data.size() > 1);
+    file_data.pop_back();
+
+    REQUIRE(is_gtp_file(file_data));
+    auto result = load_gtp_song(file_data);
+    INFO(result.error().message);
+    REQUIRE(result);
+    verify_song_data_GP5(result.value());
+}
+
 TEST_CASE("Integration Test: Real GPX file parsing", "[gpx][integration]") {
     const std::filesystem::path path = test::test_data_dir() / "testfile.gpx";
     if (!std::filesystem::exists(path)) {

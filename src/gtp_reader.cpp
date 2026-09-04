@@ -1787,7 +1787,9 @@ namespace libgp_parser {
                     return fail_from<Song>(step);
                 }
                 track.measures.push_back(std::move(measure));
-                if (ctx.format == Version::Version5) {
+                // Some GP5.10 writers omit the final measure×track padding byte; TuxGuitar's
+                // skip() silently accepts a short EOF read. Tolerate EOF here only.
+                if (ctx.format == Version::Version5 && !stream.eof()) {
                     if (auto step = stream.skip(1); !step) {
                         return fail_from<Song>(step);
                     }
