@@ -118,6 +118,14 @@ namespace libgp_parser {
         return read_string_byte(size_word.value() - 1);
     }
 
+    ParseResult<std::string> BinaryReader::read_string_byte_size_of_byte() {
+        auto size_byte = read_u8();
+        if (!size_byte.has_value()) {
+            return ParseResult<std::string>::failure(size_byte.error());
+        }
+        return read_string_byte(static_cast<int>(size_byte.value()) - 1);
+    }
+
     ParseResult<std::string> BinaryReader::read_string_integer() {
         auto len = read_i32();
         if (!len.has_value()) {

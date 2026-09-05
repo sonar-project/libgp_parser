@@ -70,6 +70,11 @@ namespace libgp_parser {
         /// @par Visibility public.
         [[nodiscard]] ParseResult<std::string> read_string_byte_size_of_integer();
 
+        /// Reads a string with length readUnsignedByte()-1 (readStringByteSizeOfByte).
+        /// @par TuxGuitar source readStringByteSizeOfByte() — used by GP1/GP2 info fields.
+        /// @par Visibility public.
+        [[nodiscard]] ParseResult<std::string> read_string_byte_size_of_byte();
+
         /// Reads a string with length readInt() (readStringInteger).
         /// @par TuxGuitar source readStringInteger().
         /// @par Visibility public.

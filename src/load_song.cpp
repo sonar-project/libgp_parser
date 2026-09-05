@@ -64,7 +64,7 @@ namespace libgp_parser {
             return ParseResult<Song>::failure(
                 {.code = ParseErrorCode::Unsupported,
                  .message =
-                     "Unrecognized Guitar Pro file (expected GTP .gp3–.gp5, GPX BCFS/BCFZ, or GP ZIP)"});
+                     "Unrecognized Guitar Pro file (expected GTP .gp1–.gp5, GPX BCFS/BCFZ, or GP ZIP)"});
         }
         if (!result.has_value()) {
             return result;

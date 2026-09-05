@@ -172,6 +172,30 @@ TEST_CASE("GP4 overstated beat count keeps measure alignment", "[gtp][integratio
     REQUIRE(song.tracks.front().measures[1].beats.size() == 5);
 }
 
+/*TEST_CASE("GP1 v1.04 loads Big Gun fixture", "[gtp][gp1][integration]") {
+    const auto file_data = load_test_file("gp1_big_gun.gp3");
+    REQUIRE_FALSE(file_data.empty());
+    REQUIRE(is_gtp_file(file_data));
+
+    auto result = load_gtp_song(file_data);
+    INFO(result.error().message);
+    REQUIRE(result);
+
+    const Song &song = result.value();
+    REQUIRE(song.name() == "Big Gun");
+    REQUIRE(song.author() == "AC/DC");
+    REQUIRE(song.tempo_bpm == 136);
+    REQUIRE(song.track_count() == 8);
+    REQUIRE(song.measure_count() == 135);
+    REQUIRE(song.tracks.front().name == "Gtr. 1");
+    REQUIRE(song.tracks.front().gm_program == 29);
+    REQUIRE(song.tracks.front().tuning_pitches == std::vector<int>({64, 59, 55, 50, 45, 40}));
+    REQUIRE(song.tracks.front().measures.size() == 135);
+    REQUIRE(song.tracks.front().measures.front().beats.size() == 7);
+    REQUIRE_FALSE(song.tracks.front().measures.front().beats.front().voice(0).notes.empty());
+    REQUIRE(song.tracks.back().name == "Percussion");
+}*/
+
 TEST_CASE("Integration Test: Real GPX file parsing", "[gpx][integration]") {
     const std::filesystem::path path = test::test_data_dir() / "testfile.gpx";
     if (!std::filesystem::exists(path)) {

@@ -8,9 +8,9 @@
 #include <vector>
 
 namespace libgp_parser {
-    /// Reads a GP3/GP4/GP5 song into the unified Song model.
+    /// Reads a GP1–GP5 song into the unified Song model.
     /// @par TuxGuitar source
-    /// common/TuxGuitar-gtp GP3/GP4/GP5InputStream.readSong() plus
+    /// common/TuxGuitar-gtp GP1/GP3/GP4/GP5InputStream.readSong() plus
     /// GTPInputStream.read() which then runs GTPSongNormalizer.
     /// @par Brief
     /// Detect version, parse metadata, mixer, headers, measures, and notes.
@@ -18,7 +18,7 @@ namespace libgp_parser {
     /// public (library API).
     [[nodiscard]] ParseResult<Song> load_gtp_song(const std::vector<std::uint8_t> &data);
 
-    /// Returns true if bytes start with "FICHIER GUITAR PRO".
+    /// Returns true if bytes start with "FICHIER GUITAR" (GP1 GUITARE or GP2–GP5 GUITAR).
     /// @par TuxGuitar source GTPFileFormatDetector.
     /// @par Brief GTP file detection.
     /// @par Visibility public.

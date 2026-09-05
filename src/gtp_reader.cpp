@@ -13,6 +13,9 @@
 #include <utility>
 
 namespace libgp_parser {
+
+    ParseResult<Song> load_gp1_song(BinaryReader &stream, int version_code);
+
     namespace {
 
         constexpr float kGpBendSemitone = 25.0F;
@@ -59,6 +62,21 @@ namespace libgp_parser {
         constexpr int kMaxBendPoints{1000};
 
         ParseResult<GtpVersion> detect_version(const std::string &version) {
+            if (version == "FICHIER GUITARE PRO v1") {
+                return ParseResult<GtpVersion>::success({.format = Version::Version1, .code = 0});
+            }
+            if (version == "FICHIER GUITARE PRO v1.01") {
+                return ParseResult<GtpVersion>::success({.format = Version::Version1, .code = 1});
+            }
+            if (version == "FICHIER GUITARE PRO v1.02") {
+                return ParseResult<GtpVersion>::success({.format = Version::Version1, .code = 2});
+            }
+            if (version == "FICHIER GUITARE PRO v1.03") {
+                return ParseResult<GtpVersion>::success({.format = Version::Version1, .code = 3});
+            }
+            if (version == "FICHIER GUITARE PRO v1.04") {
+                return ParseResult<GtpVersion>::success({.format = Version::Version1, .code = 4});
+            }
             if (version == "FICHIER GUITAR PRO v3.00") {
                 return ParseResult<GtpVersion>::success({.format = Version::Version3, .code = 0});
             }
@@ -1665,7 +1683,7 @@ namespace libgp_parser {
         }
         const int len = (data[0] <= Constants::ShiftByte30) ? static_cast<int>(data[0])
                                                             : Constants::ShiftByte30;
-        constexpr std::string_view prefix("FICHIER GUITAR PRO");
+        constexpr std::string_view prefix("FICHIER GUITAR");
         if (std::cmp_less(len, prefix.size())) {
             return false;
         }
@@ -1681,6 +1699,15 @@ namespace libgp_parser {
         auto detected = detect_version(version.value());
         if (!detected) {
             return fail_from<Song>(detected);
+        }
+
+        if (detected.value().format == Version::Version1) {
+            auto song = load_gp1_song(stream, detected.value().code);
+            if (!song) {
+                return song;
+            }
+            normalize_gtp_channels(song.value());
+            return song;
         }
 
         Song song;

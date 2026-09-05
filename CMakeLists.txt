@@ -32,6 +32,7 @@ add_library(libgp_parser
     src/gpx_document_reader.cpp include/libgp_parser/gpx_document.hpp
     src/gpx_document_parser.cpp include/libgp_parser/gpx_document.hpp
     src/gtp_reader.cpp include/libgp_parser/gtp_reader.hpp
+    src/gp1_reader.cpp
     src/load_song.cpp include/libgp_parser/load_song.hpp
     src/tempo.cpp include/libgp_parser/tempo.hpp
     src/timeline.cpp include/libgp_parser/timeline.hpp
