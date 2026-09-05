@@ -1603,8 +1603,22 @@ namespace libgp_parser {
                          .message = "Invalid beat count in GTP measure"});
                 }
                 for (int i = 0; i < beats.value(); ++i) {
+                    const std::size_t beat_start = stream.position();
+                    const std::size_t beats_before = measure.beats.size();
                     auto advance = read_beat(stream, measure, track, ctx, start, voice);
                     if (!advance) {
+                        // Some GP3/GP4 files claim more beats than they store (cut mid-measure).
+                        // The leftover bytes are often the next measure's beat count; rewind so
+                        // that measure stays aligned — same idea as truncated-file EOF tolerance.
+                        if (i > 0 && ctx.format != Version::Version5) {
+                            if (measure.beats.size() > beats_before) {
+                                measure.beats.resize(beats_before);
+                            }
+                            if (auto rewind = stream.seek(beat_start); !rewind) {
+                                return fail_from<Ok>(rewind);
+                            }
+                            break;
+                        }
                         return fail_from<Ok>(advance);
                     }
                     start += advance.value();
@@ -1819,9 +1833,12 @@ namespace libgp_parser {
                     measure.clef = clef_from_tuning(song, track);
                 }
                 if (auto step = read_measure(stream, measure, track, ctx, header); !step) {
-                    // Truncated GP3/GP4 archives often cut mid-song; TuxGuitar's InputStream
-                    // reads return short/zero data instead of failing. Keep completed measures.
-                    if (ctx.format != Version::Version5 && is_unexpected_eof(step.error())) {
+                    // Truncated / overstated GP3/GP4 archives: keep completed measures.
+                    // TuxGuitar's InputStream reads return short/zero data instead of failing.
+                    const bool recoverable = ctx.format != Version::Version5 &&
+                                             (is_unexpected_eof(step.error()) ||
+                                              step.error().message == "Invalid beat count in GTP measure");
+                    if (recoverable) {
                         for (int rollback = 0; rollback < t; ++rollback) {
                             song.tracks[static_cast<std::size_t>(rollback)].measures.pop_back();
                         }

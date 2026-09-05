@@ -33,6 +33,11 @@ namespace libgp_parser {
         /// @par Visibility public.
         [[nodiscard]] bool eof() const noexcept { return pos_ >= data_.size(); }
 
+        /// Sets the read position (for rewinding a failed beat).
+        /// @par Brief Fails if pos is past the end of the buffer.
+        /// @par Visibility public.
+        [[nodiscard]] ParseResult<Ok> seek(std::size_t pos);
+
         /// Reads one byte (readUnsignedByte).
         /// @par TuxGuitar source readUnsignedByte().
         /// @par Visibility public.

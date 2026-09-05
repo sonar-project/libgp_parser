@@ -152,6 +152,26 @@ TEST_CASE("Truncated GP3 keeps completed measures instead of failing", "[gtp][in
     REQUIRE(song.tracks.front().measures.front().beats.size() == 1);
 }
 
+TEST_CASE("GP4 overstated beat count keeps measure alignment", "[gtp][integration]") {
+    const auto file_data = load_test_file("overstated_beats.gp4");
+    REQUIRE_FALSE(file_data.empty());
+    REQUIRE(is_gtp_file(file_data));
+
+    auto result = load_gtp_song(file_data);
+    INFO(result.error().message);
+    REQUIRE(result);
+
+    const Song &song = result.value();
+    REQUIRE(song.name() == "Overstated Beats GP4");
+    REQUIRE(song.artist() == "Fixture");
+    REQUIRE(song.tempo_bpm == 120);
+    REQUIRE(song.track_count() == 1);
+    REQUIRE(song.measure_count() == 2);
+    REQUIRE(song.tracks.front().measures.size() == 2);
+    REQUIRE(song.tracks.front().measures[0].beats.size() == 1);
+    REQUIRE(song.tracks.front().measures[1].beats.size() == 5);
+}
+
 TEST_CASE("Integration Test: Real GPX file parsing", "[gpx][integration]") {
     const std::filesystem::path path = test::test_data_dir() / "testfile.gpx";
     if (!std::filesystem::exists(path)) {

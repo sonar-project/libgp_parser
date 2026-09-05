@@ -58,6 +58,14 @@ namespace libgp_parser {
         return ParseResult<Ok>::success(Ok{});
     }
 
+    ParseResult<Ok> BinaryReader::seek(const std::size_t pos) {
+        if (pos > data_.size()) {
+            return ParseResult<Ok>::failure(io_error("Seek past end of file"));
+        }
+        pos_ = pos;
+        return ParseResult<Ok>::success(Ok{});
+    }
+
     ParseResult<std::string> BinaryReader::read_gtp_version() {
         auto len_byte = read_u8();
         if (!len_byte) {
@@ -102,6 +110,10 @@ namespace libgp_parser {
         auto size_word = read_i32();
         if (!size_word.has_value()) {
             return ParseResult<std::string>::failure(size_word.error());
+        }
+        // Empty GTP strings use size_word == 1 (length byte only). size_word < 1 is corrupt.
+        if (size_word.value() < 1) {
+            return ParseResult<std::string>::failure(io_error("Invalid string length"));
         }
         return read_string_byte(size_word.value() - 1);
     }
